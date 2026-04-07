@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Ôn từ vựng Việt - Trung | Lật thẻ thông minh + Random</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f7ff 0%, #e9eef5 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+            color: #1a2c3e;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, #1e5a7d, #0f3b4f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1::before {
+            content: "📖";
+            font-size: 2rem;
+            background: none;
+            color: #2c6e9e;
+        }
+
+        .sub {
+            color: #4a627a;
+            margin-top: 8px;
+            font-weight: 500;
+            border-bottom: 2px solid #cbdbe6;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        /* stats & filter */
+        .stats-bar {
+            background: white;
+            border-radius: 40px;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .info-badge {
+            background: #eef2fa;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #1f5e8c;
+        }
+
+        .info-badge span {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin: 0 4px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            background: #f8fafd;
+            border: 1px solid #cbdde9;
+            border-radius: 48px;
+            padding: 8px 18px;
+            width: 260px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #2c7ab1;
+            box-shadow: 0 0 0 3px rgba(44,122,177,0.2);
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 32px;
+            padding: 0 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #2c3e50;
+        }
+
+        .btn-reset:hover {
+            background: #cbd5e1;
+        }
+        
+        /* Nút random mới */
+        .btn-random {
+            background: linear-gradient(135deg, #6c5ce7, #a363d9);
+            border: none;
+            border-radius: 32px;
+            padding: 0 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+            box-shadow: 0 2px 6px rgba(108,92,231,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-random:hover {
+            background: linear-gradient(135deg, #5b4bc4, #8e53c2);
+            transform: scale(0.97);
+            box-shadow: 0 4px 10px rgba(108,92,231,0.4);
+        }
+
+        /* layout */
+        .study-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 28px;
+        }
+
+        @media (max-width: 860px) {
+            .study-layout {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        /* flashcard với hiệu ứng lật 3D */
+        .flashcard-area {
+            background: transparent;
+            border-radius: 36px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            perspective: 1500px;
+        }
+
+        .card-mode-title {
+            text-align: center;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #5d7b9a;
+            margin-bottom: 16px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 340px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            border-radius: 32px;
+            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.2);
+        }
+
+        .flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .front {
+            background: linear-gradient(135deg, #ffffff, #f9fcff);
+            border: 1px solid rgba(60, 130, 180, 0.2);
+        }
+
+        .back {
+            background: linear-gradient(135deg, #fffaf5, #fff5ed);
+            transform: rotateY(180deg);
+            border: 1px solid #e0c8b8;
+        }
+
+        .term-viet {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a5d7d;
+            margin-bottom: 20px;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        .meaning-chinese {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #b1624b;
+            background: #fff3ed;
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 60px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .card-hint {
+            margin-top: 28px;
+            font-size: 0.8rem;
+            color: #8899b0;
+            font-style: italic;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 28px;
+        }
+
+        .nav-btn {
+            background: #eef3fc;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #2c6285;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-btn:hover {
+            background: #dce7f2;
+            transform: scale(0.97);
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #456e8c;
+        }
+
+        /* danh sách từ vựng */
+        .vocab-list {
+            background: rgba(255,255,240,0.3);
+            border-radius: 32px;
+            padding: 8px 6px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 18px;
+            padding: 0 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .list-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .badge-learn {
+            background: #f0f4f9;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            color: #497e9e;
+        }
+
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .vocab-item {
+            background: white;
+            border-radius: 24px;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-left: 6px solid #6da5c9;
+            cursor: pointer;
+        }
+
+        .vocab-item:hover {
+            background: #fefcf5;
+            transform: translateX(4px);
+            border-left-color: #e0876a;
+        }
+
+        .viet-part {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e4d6b;
+            min-width: 180px;
+            word-break: break-word;
+            flex: 2;
+        }
+
+        .chi-part {
+            color: #b45f3b;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: right;
+            flex: 2;
+            word-break: break-word;
+        }
+
+        @media (max-width: 550px) {
+            .vocab-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .chi-part {
+                text-align: left;
+            }
+            .term-viet {
+                font-size: 1.3rem;
+            }
+            .meaning-chinese {
+                font-size: 1.1rem;
+            }
+            .flip-card {
+                height: 300px;
+            }
+            .stats-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-group {
+                justify-content: center;
+            }
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6f8eaa;
+            border-top: 1px solid #d0e0ec;
+            padding-top: 24px;
+        }
+        
+        .random-active-badge {
+            background: #e9d8fd;
+            color: #6c5ce7;
+            font-size: 0.7rem;
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>🐉 Ôn từ vựng Việt - Trung</h1>
+        <div class="sub">Đầu voi đuôi chuột · 虎头蛇尾 · Nhấn vào thẻ để lật · 🎲 Random kiểm tra</div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="info-badge">📚 Tổng số: <span id="totalCount">0</span> từ/cụm</div>
+        <div class="filter-group">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Tìm theo tiếng Việt hoặc Trung...">
+            <button id="randomBtn" class="btn-random">🎲 Học ngẫu nhiên</button>
+            <button id="resetFilterBtn" class="btn-reset">⟳ Xóa lọc</button>
+        </div>
+    </div>
+
+    <div class="study-layout">
+        <!-- Flashcard với lật 3D -->
+        <div class="flashcard-area">
+            <div class="card-mode-title">🎴 THẺ GHI NHỚ · BẤM VÀO THẺ ĐỂ LẬT</div>
+            <div class="flip-card" id="flipCard">
+                <div class="flip-card-inner">
+                    <div class="front">
+                        <div class="term-viet" id="cardViet">Đầu voi đuôi chuột</div>
+                        <div class="card-hint">✨ Nhấn để xem nghĩa</div>
+                    </div>
+                    <div class="back">
+                        <div class="meaning-chinese" id="cardChinese">虎头蛇尾</div>
+                        <div class="card-hint">🔁 Nhấn để quay lại</div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" id="prevBtn">◀ Trước</button>
+                <button class="nav-btn" id="nextBtn">Sau ▶</button>
+            </div>
+            <div class="progress-text" id="cardProgress"></div>
+        </div>
+
+        <!-- Danh sách từ vựng -->
+        <div class="vocab-list">
+            <div class="list-header">
+                <h2>📖 Kho từ vựng <span id="randomIndicator" class="random-active-badge" style="display: none;">🎲 Chế độ random</span></h2>
+                <div class="badge-learn">📌 Bấm vào từ để chọn & học</div>
+            </div>
+            <div class="cards-grid" id="vocabGrid"></div>
+        </div>
+    </div>
+    <footer>📌 Ôn tập cá nhân · Lật thẻ mượt mà · Random giúp ghi nhớ sâu hơn</footer>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // DỮ LIỆU TỪ VỰNG - ĐÃ THAY THẾ TẤT CẢ '。。。' THÀNH '……'
+    // --------------------------------------------------------------
+    const rawVocabulary = [
+        ["Đầu voi đuôi chuột", "虎头蛇尾"],
+        ["Ngu như bò", "蠢得像猪一样"],
+        ["Nước đổ đầu vịt", "耳旁风/ 左耳进右耳出"],
+        ["Môi hở răng lạnh, máu chảy ruột mềm", "唇齿相依，血浓于水"],
+        ["Có nếp có tẻ", "儿女双全"],
+        ["Khủng hoảng tài chính", "金融危机"],
+        ["Tình hình quốc gia", "国家形势"],
+        ["Giới thiệu nhân sự", "人事推荐"],
+        ["Bầu", "选取"],
+        ["Phiếu bầu", "票<br>票数: số phiếu bầu"],
+        ["Bí thư", "书记<br>Tổng bí thư: 总书记<br>Tổng thư ký: 秘书长"],
+        ["Lãnh đạo đảng và nhà nước VN", "越南党和国家领导人<br>Lãnh đạo đảng và nhà nước TQ<br>中国党和国家领导人"],
+        ["Gọi điện chúc mừng ai đó", "……向……致贺电"],
+        ["Tổng bí thư ban chấp hành Trung ương Đảng cộng sản Việt Nam, chủ tịch nước Cộng hòa xã hội chủ nghĩa Việt Nam Tô Lâm", "越共中央总书记，越南国家主席苏林<br>(中共总书记，中国国家主席习近平)"],
+        ["Thủ tướng chính phủ Phạm Minh Chính", "越南政府总理范明政"],
+        ["Chủ tịch quốc hội", "国会主席"],
+        ["Thủ tướng quốc vụ viện Trung Quốc Lý Cường", "中国国务院总理李强"],
+        ["Uỷ ban thường vụ đại hội đại biểu nhân dân toàn quốc", "全国人大常委会<br>Uỷ viên trưởng ủy ban thường vụ đại hội đại biểu nhân dân toàn quốc: 全国人大常委会委员长"],
+        ["Nhân dịp", "Sự kiện nhỏ: 值……之际<br>Sự kiện lớn: 以……为契机"],
+        ["Chúc mừng", "庆祝"],
+        ["Đại hội đại biểu ....lần thứ XX", "XX 大"],
+        ["Nhất quán", "一贯"],
+        ["Quan hệ với TQ", "对华关系"],
+        ["Lành mạnh", "健康"],
+        ["Đa phương hoá, đa dạng hoá", "全方位，多样化"],
+        ["Đường lối đối ngoại, chính sách đối ngoại", "对外政策"],
+        ["Lựa chọn chiến lược", "战略选择"],
+        ["Ưu tiên hàng đầu", "头等优先"],
+        ["Lãnh đạo cấp cao", "高层领导"],
+        ["Duy trì trao đổi thường xuyên", "保持频繁互访"],
+        ["Định hướng chiến lược", "指明战略方向"],
+        ["Vun đắp", "培育"],
+        ["Nâng cao", "增进"],
+        ["Tiếp tục thúc đẩy", "持续推进"],
+        ["Quan hệ đối tác hợp tác chiến lược toàn diện", "全面战略合作伙伴关系"],
+        ["Cộng đồng chia sẻ tương lai", "命运共同体<br>（中越命运共同体）"],
+        ["Cụ thể, thiết thực", "务实<br>务实有效: thiết thực và có hiệu quả"],
+        ["Chiều sâu", "纵深<br>Đi vào chiều sâu: 走向纵深"],
+        ["Vì lợi ích thiết thực của nhân dân 2 nước", "造福两国人民"],
+        ["Vì hoà bình, ổn định, hợp tác và phát triển của khu vực và trên thế giới", "致力于地区与世界和平、稳定、合作与发展"],
+        ["Bộ chính trị", "政治局"],
+        ["Trên cơ sở.....", "在……基础上<br>Trên cơ sở định hướng giới thiệu nhân sự của bộ chính trị<br>在政治局人事推荐的规则基础上"],
+        ["Nêu cao tinh thần.....", "秉持……精神<br>Trung ương đã nêu cao tinh thần trách nhiệm, tập trung trí tuệ, thảo luận dân chủ, suy tôn (tôn trọng)<br>中央秉持责任、集中智慧、民主讨论、尊重精神"],
+        ["Chủ tịch nước cộng hòa xã hội chủ nghĩa Việt Nam", "越南社会主义共和国主席"],
+        ["Tổng bí thư ban chấp hành Trung ương Đảng cộng sản Việt Nam", "越南共产党中央委员会总书记"],
+        ["Đã có bài phát biểu/ phát biểu", "发表讲话"],
+        ["Khẳng định/ nhấn mạnh", "强调"],
+        ["Phát huy", "弘扬，发扬"],
+        ["Cố đồng chí.....", "已故（chức vụ) tên 同志"],
+        ["Các thế hệ lãnh đạo đi trước", "历代领导人"],
+        ["Thành quả cách mạng", "革命成果"],
+        ["Thống nhất", "一致<br>统一"],
+        ["Cùng với ai đó....", "同……一道"],
+        ["Ban bí thư", "书记处"],
+        ["Các....(Nhiệm vụ, mục tiêu....)", "各项……（目标，任务...）"],
+        ["Vững bước phát triển", "稳步发展<br>Đưa đất nước vững bước phát triển trong giai đoạn mới: 推动国家在新时期稳步发展"],
+        ["Cũng trong dịp này", "值此之机"],
+        ["Bộ trưởng bộ ngoại giao", "外交部部长<br>Phó thủ tướng chính phủ, bộ trưởng bộ ngoại giao Bùi Thanh Sơn: 越南政府副总理，外交部部长裴青山"],
+        ["Chủ tịch ủy ban chỉ đạo hợp tác song phương Việt Nam Trung Quốc", "越中双边合作指导委员会主席"],
+        ["Chủ nhiệm văn phòng ủy ban công tác đối ngoại Trung ương", "（中国，越南……）中央外事工作委员会办公室主任"],
+        ["Vương nghị", "王毅"],
+        ["就+ đối tượng của hành động+ V", "Chỉ ra đối tượng của hành động<br>VD: 中国外交部部长王毅在北京举行的记者会上就“中国对外政策和外交关系”回答中外记者提问时表示：khi trả lời phỏng vấn của phóng viên trong và ngoài nước về chính sách đối ngoại và quan hệ ngoại giao của trung quốc tại bắc kinh, bộ trưởng bộ ngoại giao Trung Quốc vương nghị tỏ ý"],
+        ["Chương trình nghị sự hợp tác đối ngoại", "对外合作议程"],
+        ["Xây dựng quan hệ đối tác chiến lược với trình độ ngày càng cao", "打造更高水平的战略合作伙伴关系"],
+        ["Xây dựng cộng đồng vận mệnh ngày càng chặt chẽ hơn", "构建更密切的命运共同体"],
+        ["Giành được nhiều thành quả, gặt hái nhiều thành quả", "硕果累累"],
+        ["Bạn hàng mậu dịch", "贸易伙伴<br>Bạn hàng mậu dịch lớn nhất: 第一大贸易伙伴"],
+        ["Tổng mức mậu dịch", "贸易额"],
+        ["Đột phá", "突破"],
+        ["Tỷ<br>Triệu", "十亿<br>百万"],
+        ["Mang lại lợi ích thiết thực cho....", "造福……（rộng)<br>为……带来实实在在的利益(thường về lợi ích kinh tế)"],
+        ["Khu vực châu á Thái Bình Dương", "亚太区域"],
+        ["Hình mẫu thành công nhất và đầy sức sống nhất", "最为成功和最具活力的典范"],
+        ["Bản đồ xanh mới", "新蓝图"],
+        ["Triển vọng đến năm 2030 quan hệ đối tác chiến lược Trung Quốc ASEAN", "中国-东盟战略合作伙伴关系2030年愿景"],
+        ["Sáng kiến", "倡议<br>Thực hiện kết nối càng tốt hơn giữa sáng kiến 1 vành đai 1 con đường với quy hoạch phát triển ASEAN: 实现“一带一路”倡议和东盟发展规划更好的对接"],
+        ["Kinh tế thương mại", "经贸"],
+        ["Mở ra....(Cơ hội...)", "开辟……"],
+        ["Giành được....", "取得"],
+        ["Xây dựng cơ sở hợp tác cao và mới", "打造新高地"],
+        ["Vành đai phát triển kinh tế sông lan thương- mê công", "澜湄流域经济发展带"],
+        ["V+ hơn nữa", "进一步+V"],
+        ["Khu tăng trưởng", "增长区<br>Khu tăng trưởng miền đông ASEAN: 东盟东部增长区"],
+        ["Xây dựng khuôn khổ.....", "构建……框架<br>Xây dựng khuôn khổ hợp tác....: 构建……合作框架"],
+        ["Chiếm thị trường lớn", "大放异彩"],
+        ["Một lần nữa khẳng định", "重申"],
+        ["Đánh giá cao", "高度评价"],
+        ["Vấn đề hạt nhân", "核问题"],
+        ["Công cuộc xây dựng chủ nghĩa xã hội", "社会主义建设"],
+        ["Không ngừng tiến lên", "不断前进"],
+        ["Mặt trận tổ Quốc Việt Nam", "越南祖国统一战线"],
+        ["Nguyên lãnh đạo đảng và nhà nước", "党和国家老一辈领导人"],
+        ["Các đồng chí lão thành cách mạng", "老一辈革命家"],
+        ["Mẹ Việt Nam anh hùng", "越南英雄母亲"],
+        ["Anh hùng lực lượng vũ trang nhân dân", "战斗英模"],
+        ["Trong không khí hào hùng...", "Trong không khí hào hùng của những ngày tháng tư lịch sử<br>Trong ngày đặc biệt ……"],
+        ["Phấn khởi, vui mừng", "欢聚一堂"],
+        ["Trọng thể tổ chức", "隆重举行"],
+        ["Lễ kỷ niệm (bn năm) ngày giải phóng hoàn toàn miền Nam thống nhất đất nước", "西贡解放 X周年庆祝大会"],
+        ["Thay mặt.....", "谨代表……"],
+        ["Gửi tới .... Lời thăm hỏi...", "向……致以最诚挚的问候和最美好的祝福"],
+        ["Trong thời khắc thiêng liêng", "在这个神圣而又感慨的时刻"],
+        ["Thành kính tưởng nhớ", "深切怀念"],
+        ["Đời đời nhớ ơn", "世世代代铭记"],
+        ["Anh hùng giải phóng dân tộc", "民族解放英雄"],
+        ["Danh nhân văn hoá thế giới", "世界文化名人"],
+        ["Phát triển mạnh mẽ", "迅速发展"],
+        ["Liên quan mật thiết", "息息相关"],
+        ["Thành tích kinh doanh", "经营业绩"],
+        ["Xí nghiệp phí tài chính", "非金融机构"],
+        ["Giảm mức độ nắm giữ", "减持<br>Giảm mức độ nắm giữ cổ phiếu của những công ty niêm yết cổ phiếu: 减持上市公司股票"],
+        ["Tỏ ý", "表示：chủ tịch tỏ ý<br>透露: quân mỹ tỏ ý"],
+        ["Đánh nhanh thắng nhanh", "速战速决"],
+        ["Nhân số suy sét", "考虑因素"],
+        ["Theo đà thời hạn cuối cùng đã đến gần", "随着最后时限的临近"],
+        ["Kế thừa quá khứ hướng tới tương lai", "继往开来"],
+        ["Ấn định", "制定"],
+        ["Hiệp định đối tác kinh tế toàn diện khu vực", "区域全面经济伙伴关系协定"],
+        ["Sớm đạt được", "早日达成"],
+        ["Xây dựng cộng đồng chung", "共同体建设 (n)<br>建设共同体 (vo)"],
+        ["Mãi mãi tưởng nhớ và tri ân", "永远怀念和铭记"],
+        ["Anh hùng liệt sĩ", "革命烈士"],
+        ["Các lãnh đạo kiệt xuất của đảng và nhân dân", "党和人民杰出的领导前辈"],
+        ["Các chính phủ, các phòng trào, các tổ chức", "世界上崇尚和平、进步的各个政府、组织和人民"],
+        ["Dành những tình cảm và sự giúp đỡ quý báu", "为……给予了宝贵的精神和物质支持"],
+        ["Kháng chiến chống thực dân Pháp", "抗法殖民战争"],
+        ["Đế quốc Mỹ", "美帝国主义"],
+        ["Ngang nhiên", "公然"],
+        ["Áp đặt", "强压"],
+        ["Chế độ thực dân kiểu mới", "新型殖民制度"],
+        ["Căn cứ quân sự", "军事根据地"],
+        ["Đàn áp", "镇压"],
+        ["Tiến hành chiến tranh phá hoại khốc liệt", "展开残酷的战争"],
+        ["Đau thương, mất mát", "伤痛"],
+        ["Nghiêm trọng (tổ quốc ta đã trải qua những thử thách cực kì nghiêm trọng)", "艰苦<br>我们国家经历了极其艰苦的挑战"],
+        ["Song", "然而"],
+        ["Lời kêu gọi của chủ tịch HCM", "胡志明主席的号召深入每一个越南人的心理，并化为坚定的行动指南"],
+        ["Sự Lãnh đạo sáng suốt", "光辉指导"],
+        ["Muôn vàn khó khăn, gian khổ", "千辛万苦"],
+        ["Chiến công oanh liệt", "赫赫战功"],
+        ["Đánh cho Mỹ cút", "打跑美帝国主义"],
+        ["Đánh cho ngụy nhào", "打倒叛徒"],
+        ["Cuộc tiến công và nổi dậy mùa xuân năm 1975", "1975年春天发起总进攻"],
+        ["Toàn thắng", "大获全胜"],
+        ["Chiến dịch Hồ Chí Minh", "胡志明战役"],
+        ["Giải phóng hoàn toàn miền Nam", "南部全面解放"],
+        ["Bắc Nam xum họp 1 nhà", "南北团结一家亲"],
+        ["Tràn ngập niềm vui", "欢欣雀跃"],
+        ["Làm Nức lòng.....ai đó", "振奋……的心"],
+        ["Lòng yêu nước nồng nàn", "炽热的爱国之心"],
+        ["Đường lối và nghệ thuật quân sự Việt Nam", "越南军事路线和军事艺术"],
+        ["Khối đại đoàn kết dân tộc", "民族大团结"],
+        ["Tài chỉ huy thao lược tài ba", "雄韬伟略<br>Tài chỉ huy thao lược của các vị tướng lĩnh tài ba<br>各位将领的雄韬伟略"],
+        ["Sự ủng hộ, giúp đỡ to lớn, hiệu quả", "卓有成效的支持和帮助"],
+        ["Kề vai sát cánh chống kẻ thù chung", "并肩作战"],
+        ["Campuchia", "柬埔寨"],
+        ["Lý tưởng hoài bão", "理想追求"],
+        ["Tương lai vận mệnh đất nước", "国家前途命运"],
+        ["Xoá đói giảm nghèo, giúp đỡ xoá nghèo", "扶贫解困"],
+        ["Khu vực mậu dịch tự do trung quốc asean", "中国-东盟自由贸易区"],
+        ["UNESCO", "联合国教科文组织"],
+        ["Đời sống tinh thần", "精神面貌"],
+        ["Điều chỉnh cơ cấu ngành nghề", "产业结构调整"],
+        ["Công cuộc xây dựng hiện đại hoá", "现代化建设"],
+        ["跻身", "Chen chân vào"],
+        ["WTO", "世界贸易组织"]
+    ];
+
+    let masterVocab = rawVocabulary.map(([viet, chi]) => ({ viet: viet.trim(), chi: chi }));
+    let filteredData = [...masterVocab];
+    let currentCardIndex = 0;
+    let isRandomMode = false;       // Trạng thái random (chỉ để hiển thị badge)
+    let lastSearchTerm = "";        // Lưu lại từ khóa tìm kiếm để random không làm mất filter
+
+    // DOM elements
+    const totalSpan = document.getElementById("totalCount");
+    const vocabGrid = document.getElementById("vocabGrid");
+    const searchInput = document.getElementById("searchInput");
+    const resetBtn = document.getElementById("resetFilterBtn");
+    const randomBtn = document.getElementById("randomBtn");
+    const cardViet = document.getElementById("cardViet");
+    const cardChinese = document.getElementById("cardChinese");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const cardProgress = document.getElementById("cardProgress");
+    const flipCardContainer = document.getElementById("flipCard");
+    const randomIndicatorSpan = document.getElementById("randomIndicator");
+
+    // Xử lý lật thẻ
+    function setFlipState(flipped) {
+        if (flipped) {
+            flipCardContainer.classList.add('flipped');
+        } else {
+            flipCardContainer.classList.remove('flipped');
+        }
+    }
+
+    function resetFlip() {
+        setFlipState(false);
+    }
+
+    // Cập nhật flashcard theo currentCardIndex
+    function updateFlashcardByIndex() {
+        if (filteredData.length === 0) {
+            cardViet.innerText = "📭 Không có từ phù hợp";
+            cardChinese.innerText = "Hãy xóa bộ lọc hoặc random lại";
+            cardProgress.innerText = "0 / 0";
+            resetFlip();
+            return;
+        }
+        const item = filteredData[currentCardIndex];
+        if (item) {
+            cardViet.innerText = item.viet;
+            cardChinese.innerHTML = item.chi;
+            cardProgress.innerText = `${currentCardIndex+1} / ${filteredData.length}`;
+            resetFlip();
+        }
+    }
+
+    // Render danh sách từ vựng bên cạnh
+    function renderVocabList() {
+        if (filteredData.length === 0) {
+            vocabGrid.innerHTML = `<div style="padding: 2rem; text-align:center; background: #fff4e8; border-radius: 32px;">✨ Không tìm thấy từ vựng nào. Thử nhập từ khóa khác hoặc random nhé!</div>`;
+            return;
+        }
+        let html = "";
+        filteredData.forEach((item, idx) => {
+            const displayChi = item.chi.length > 70 ? item.chi.substring(0, 70) + "…" : item.chi;
+            html += `
+                <div class="vocab-item" data-index="${idx}">
+                    <div class="viet-part">${escapeHtml(item.viet)}</div>
+                    <div class="chi-part">${escapeHtml(displayChi)}</div>
+                    <div class="badge-learn">📌 chọn</div>
+                </div>
+            `;
+        });
+        vocabGrid.innerHTML = html;
+        document.querySelectorAll('.vocab-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const idxAttr = el.getAttribute('data-index');
+                if (idxAttr !== null) {
+                    const newIdx = parseInt(idxAttr, 10);
+                    if (!isNaN(newIdx) && newIdx >= 0 && newIdx < filteredData.length) {
+                        currentCardIndex = newIdx;
+                        updateFlashcardByIndex();
+                    }
+                }
+            });
+        });
+    }
+
+    // Hàm xáo trộn mảng (Fisher-Yates)
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Random toàn bộ danh sách đang hiển thị (giữ nguyên filter)
+    function applyRandomOrder() {
+        if (filteredData.length === 0) {
+            // Nếu đang không có từ nào thì không random
+            return;
+        }
+        // Xáo trộn filteredData hiện tại
+        filteredData = shuffleArray([...filteredData]);
+        currentCardIndex = 0;
+        isRandomMode = true;
+        randomIndicatorSpan.style.display = "inline-block";
+        // Cập nhật giao diện
+        renderVocabList();
+        updateFlashcardByIndex();
+    }
+
+    // Lọc từ vựng theo từ khóa, đồng thời reset random mode (vì lọc tạo thứ tự mặc định)
+    function filterVocabulary() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        lastSearchTerm = searchTerm;
+        let newFiltered;
+        if (searchTerm === "") {
+            newFiltered = [...masterVocab];
+        } else {
+            newFiltered = masterVocab.filter(item => 
+                item.viet.toLowerCase().includes(searchTerm) || 
+                item.chi.toLowerCase().includes(searchTerm)
+            );
+        }
+        filteredData = newFiltered;
+        currentCardIndex = 0;
+        isRandomMode = false;
+        randomIndicatorSpan.style.display = "none";
+        updateStatsAndList();
+    }
+
+    // Reset filter: xóa tìm kiếm, thoát random, về master gốc
+    function resetFilter() {
+        searchInput.value = "";
+        lastSearchTerm = "";
+        filteredData = [...masterVocab];
+        currentCardIndex = 0;
+        isRandomMode = false;
+        randomIndicatorSpan.style.display = "none";
+        updateStatsAndList();
+    }
+
+    // Random nhưng vẫn giữ nguyên điều kiện lọc hiện tại (nếu đang lọc thì random trong các từ đã lọc)
+    function randomizeCurrentList() {
+        if (filteredData.length === 0) {
+            // Nếu không có từ nào, không thể random
+            return;
+        }
+        // Xáo trộn filteredData hiện tại
+        filteredData = shuffleArray([...filteredData]);
+        currentCardIndex = 0;
+        isRandomMode = true;
+        randomIndicatorSpan.style.display = "inline-block";
+        renderVocabList();
+        updateFlashcardByIndex();
+    }
+
+    function nextCard() {
+        if (filteredData.length === 0) return;
+        currentCardIndex = (currentCardIndex + 1) % filteredData.length;
+        updateFlashcardByIndex();
+    }
+
+    function prevCard() {
+        if (filteredData.length === 0) return;
+        currentCardIndex = (currentCardIndex - 1 + filteredData.length) % filteredData.length;
+        updateFlashcardByIndex();
+    }
+
+    function updateStatsAndList() {
+        totalSpan.innerText = filteredData.length;
+        renderVocabList();
+        updateFlashcardByIndex();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Sự kiện lật thẻ
+    flipCardContainer.addEventListener("click", (e) => {
+        if (filteredData.length === 0) return;
+        flipCardContainer.classList.toggle('flipped');
+    });
+
+    // Khởi tạo và gắn sự kiện
+    function init() {
+        filterVocabulary();  // hiển thị toàn bộ danh sách ban đầu
+        searchInput.addEventListener("input", () => {
+            // Khi gõ tìm kiếm, tự động filter và thoát random
+            filterVocabulary();
+        });
+        resetBtn.addEventListener("click", resetFilter);
+        randomBtn.addEventListener("click", randomizeCurrentList);
+        prevBtn.addEventListener("click", prevCard);
+        nextBtn.addEventListener("click", nextCard);
+    }
+
+    init();
+</script>
+</body>
+</html>
